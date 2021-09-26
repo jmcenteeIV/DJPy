@@ -6,7 +6,7 @@ authors = ["Jansen"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
-pyqt5 = "5.15.4"
+django = "3.2.7"
 
 [tool.poetry.dev-dependencies]
 
