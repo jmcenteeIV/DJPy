@@ -8,8 +8,13 @@ from threading import Thread
 from playsound import playsound
 
 class Music_Button(tk.Button):
-    def __init__(self, frame):
+    selected = False
+    button_id = ""
+
+    def __init__(self, frame, app, button_id):
         self.selected = False
+        self.app = app
+        self.button_id = button_id
         super(Music_Button, self ).__init__(master=frame)
     
     async def play_sound(self):
@@ -18,19 +23,26 @@ class Music_Button(tk.Button):
         print('ding')
         await playsound(note)
 
-    def is_switched(self):
+    def is_toggled(self):
+        return self.selected
+
+
+    def button_toggle(self):
         if self.selected:
-            self.config(fg = "grey")
+            self.config(fg = "black")
             self.selected = False
         else:
-            self.config(fg = "green")
+            self.config(fg = "grey")
             self.selected = True
-
-
-    def button_selection(self):
-        self.is_switched()
        
+    def print_button(self):
+        print(f'button id is {self.button_id}')
 
+    def start_stuff(self):
+        self.button_toggle()
+        self.app.toggle_changes()
+        self.app.change_buttons()
+        self.print_button()
 
 class Application(tk.Frame):
     toggled = False
@@ -51,29 +63,36 @@ class Application(tk.Frame):
             column = tk.Frame(self.master)
             column.pack( side = "left")
             button_list = []
-            for num, letter in enumerate(list_char):
-                note_button = Music_Button(column)
-                note_button["text"] = letter+str(num+1)
-                note_button["command"] = self.button_command
+            for letter in list_char:
+                note_button = Music_Button(column, self, letter+str(number))
+                note_button["text"] = letter+str(number)
+                note_button["command"] = note_button.start_stuff
                 note_button.config(bg="green")
                 #self.note_button.grid(row=num, column=number)
                 note_button.pack(side="top")
                 button_list.append(note_button)
             self.column_list.append(button_list)
 
-
+    def print_hello(self):
+        print("Hello I am App")
     
         
-    def button_command(self):
+    def button_command(self, note_button):
+        note_button.button_toggle()
+        print(f'{note_button.button_id} clicked')
         self.start_stuff() 
 
-    def start_stuff(self):
-        self.toggle_changes()
-        self.change_buttons()
+
 
     def toggle_changes(self):
         if self.toggled:
-            self.toggled = False
+            no_buttons_toggled = True
+            for column in self.column_list:
+                for button in column:
+                    if button.is_toggled():
+                        no_buttons_toggled = False
+            if no_buttons_toggled:
+                self.toggled = False
         else:
             self.toggled = True
 
@@ -81,6 +100,7 @@ class Application(tk.Frame):
         while self.toggled:
             for button in self.column_list[self.current_column]:
                 button.config(bg="black")
+                button.play_sound()
             self.update()
             time.sleep(.5)
             for button in self.column_list[self.current_column]:
