@@ -3,7 +3,6 @@ import tkinter as tk
 import os
 import asyncio
 import time
-from threading import Thread
 
 from playsound import playsound
 
@@ -11,17 +10,16 @@ class Music_Button(tk.Button):
     selected = False
     button_id = ""
 
-    def __init__(self, frame, app, button_id):
+    def __init__(self, frame, app, button_id, note):
         self.selected = False
         self.app = app
         self.button_id = button_id
+        self.file = note
         super(Music_Button, self ).__init__(master=frame)
     
-    async def play_sound(self):
-        dirname = os.path.dirname(__file__)
-        note = os.path.join(dirname, "../music/sounds/piano-a.wav")
+    def play_sound(self):
         print('ding')
-        await playsound(note)
+        playsound(self.file)
 
     def is_toggled(self):
         return self.selected
@@ -57,14 +55,17 @@ class Application(tk.Frame):
         
         
     def create_widgets(self):
-        list_num = [1, 2, 3, 4, 5, 6, 7, 8]
+        current_dir = os.path.dirname(__file__)
+        music_dir = os.path.join(current_dir, '../music/sounds/' )
+        list_files = os.listdir(music_dir)
+        #list_num = [1, 2, 3, 4, 5, 6, 7, 8]
         list_char = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
-        for number in list_num:
+        for number, file in enumerate(list_files):
             column = tk.Frame(self.master)
             column.pack( side = "left")
             button_list = []
             for letter in list_char:
-                note_button = Music_Button(column, self, letter+str(number))
+                note_button = Music_Button(column, self, letter+str(number), f'/home/jansen/Documents/git/DJPy/music/sounds/{file}')
                 note_button["text"] = letter+str(number)
                 note_button["command"] = note_button.start_stuff
                 note_button.config(bg="green")
@@ -100,7 +101,9 @@ class Application(tk.Frame):
         while self.toggled:
             for button in self.column_list[self.current_column]:
                 button.config(bg="black")
-                button.play_sound()
+                if button.is_toggled():
+                    t = threading.Thread(target=button.play_sound)
+                    t.start()
             self.update()
             time.sleep(.5)
             for button in self.column_list[self.current_column]:
