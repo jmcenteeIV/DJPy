@@ -5,7 +5,7 @@ description = "music app"
 authors = ["Jansen"]
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.8"
 django = "3.2.7"
 playsound = "1.3.0"
 tk = "8.6.11"
